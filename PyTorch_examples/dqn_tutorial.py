@@ -19,6 +19,10 @@ import torch.nn.functional as F
 import torchvision.transforms as T
 
 
+# This is based on https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
+# The only changes are documentation, image rendering, and some extra test code.
+
+
 env = gym.make('CartPole-v0').unwrapped
 
 # set up matplotlib
