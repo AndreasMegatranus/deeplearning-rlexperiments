@@ -10,6 +10,7 @@ import torch
 
 
 # This outputs action and observation space information about Open Gym environments.
+# (uncomment one of the env_name = lines)
 
 
 # Environments (see also gym.openai.com/envs)
@@ -29,9 +30,11 @@ import torch
 # For these, need to do
 # pip install box2d-py
 
-env_name = 'BipedalWalker-v3'   # 4-d continuous action space
+# env_name = 'BipedalWalker-v3'   # 4-d continuous action space
 # env_name = 'LunarLander-v2'   # 4-d discrete action space
-
+# env_name = 'BipedalWalkerHardcore-v3'   # 4-d continuous action space
+# env_name = 'CarRacing-v0'   # 3-d continuous action space
+env_name = 'LunarLanderContinuous-v2'   # 2-d continuous action space
 
 
 

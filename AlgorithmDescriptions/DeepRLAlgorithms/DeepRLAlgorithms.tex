@@ -88,21 +88,111 @@ This provides a summary and references for current standard deep reinforcement l
 \maketitle
 
 \section{Introduction}
-ACM's consolidated 
 
+\subsection{Algorithm Categorization}
+
+DRL (Deep Reinforcement Learning) Algorithms can be categorized according to a number of characteristics.
+These include whether the algorithm 
+
+\begin{itemize}
+\item uses a model (\textit{model-based} vs. \textit{model-free});
+\item learns a value function or learns a policy directly;
+\item is an \textit{on-policy} or \textit{off-policy} algorithm.
+\end{itemize}
+
+With model-based RL, a model of state transition (next state given current state
+and action) is used.  The model supports searching multiple steps ahead in order to select the optimal action,
+based on reward at each step.
+This search can be informed by both value and policy heuristics, as was done in Alpha Go [cite].
+With model-free RL, no explicit state transition model is used.
+Instead, one or both of two simpler functions (value function and/or policy function) is learned directly.
+
+A value function returns a scalar value for a given current state.  Related to this, a Q function (or value-action function)
+returns a scalar value given a current state and a proposed action from this state.  
+These scalar values represent the discounted reward, or future utility, that is expected to accrue, if a particular control
+policy is followed.  The Q function can be used to pick the best action given a current state (the action that maximizes reward).
+A policy function directly returns an action for a given current state.
+Ideally, the policy function is learned well enough that it closely approximates the \textit{optimal} policy function
+(returns the best action for a given current state).
+
+An \textit{actor-critic} approach uses both value and policy functions.
+
+In order to understand the difference between on-policy and off-policy methods, it is important to consider and separate out
+the policy being learned and the policy used to generate the data.
+For on-policy methods, these are the same.
+For off-policy methods, these are not the same.
+For example, in Q-learning (value function and Q function learning), the policy used to control the agent in the environment
+(to generate the data) is only sometimes the policy being learned.  
+In particular, the action is sometimes chosen from the policy being learned (greedy option), and is sometimes chosen randomly
+(exploratory option).  
+This helps to ensure that the learning does not prematurely converge to a local optimum that is significantly less optimal
+than the global optimum.
+Selection of whether to choose the greedy or exploratory action is based on an \textit{epsilon} factor that decays over time, 
+so that as the policy is learned, selection of the greedy action becomes more likely
+(leveraging the fact that the policy should be getting better over time).
+
+Q-Learning is an example of an off-policy method.
+SARSA is an example of an on-policy method.
+See also \url{https://analyticsindiamag.com/reinforcement-learning-policy}.
+
+
+\noindent See also 
+\url{https://smartlabai.medium.com/reinforcement-learning-algorithms-an-intuitive-overview-904e2dff5bbc}
+
+\url{https://www.guru99.com/reinforcement-learning-tutorial.html}
+
+\url{https://en.wikipedia.org/wiki/Deep_reinforcement_learning#Off-policy_reinforcement_learning}
+
+\url{https://analyticsindiamag.com/reinforcement-learning-policy}.
+
+
+Additional characteristics used to categorize DRL algorithms include:
+
+\begin{itemize}
+\item whether the output action is discrete or continuous;
+\item whether the input is raw pixels or a state estimate vector;
+\item whether the system is deterministic or stochastic.
+\end{itemize} 
+
+[Investigate whether there are algorithms that have hybrid discrete/continuous output actions.]
+
+In principle, DRL algorithms model Markov Decision Processes (MDPs).
+As such, they are based on the notion of state.
+However, in many cases, the distinction between state and sensor data is blurred.
+For example, in many DRL algorithms, an environment like the cart-pole environment in the Open AI gym 
+provides pixels as the state, rather than the traditional position and angle state estimate, even
+though, from a traditional control systems standpoint, pixels should be regarded as sensor input.
+This blurring can be considered a feature as it allows for end to end control algorithms.
+
+Regarding whether the system is deterministic or stochastic, a general MDP supports a stochastic environment,
+where a particular control action given a current state implies a distribution of possible next states.
+The deterministic case is just the degenerate case of the MDP, where the control action implies a single next state.
+There is some confusion about this terminology in some of the DRL algorithms;  in some cases, stochastic
+implies a control policy that provides a distribution of possible actions given the current state.
+Thus, it is possible to have both a distribution of possible actions, and a distribution of next states
+conditioned for each action.
+
+
+
+\subsection{Algorithm Summaries}
+
+
+Intro to algorithms (summary of each)
 List algorithms, organized (see web sites)
 
-model-free
 
-model-based
 
-learning value function
 
-learning policy directly
 
-Whether output action is discrete or continuous
 
-Whether input is raw pixels, or a state estimate
+deterministic vs. stochastic, MDP
+
+Confusion about this also
+
+
+
+
+
 
 \subsection{To Do}
 
@@ -434,6 +524,9 @@ To Robert, for the bagels and explaining CMYK and color spaces.
 
 
 \subsection{Introduction to Deep Learning}
+
+% Sutton and Barto
+\noindent \url{http://incompleteideas.net/book/the-book.html}
 
 \noindent \url{https://markus-x-buchholz.medium.com/deep-reinforcement-learning-introduction-deep-q-network-dqn-algorithm-fb74bf4d6862}
 
