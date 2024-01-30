@@ -355,6 +355,74 @@ Using a separate target network in this way improves training stability.
 
 
 
+\section{Experimentation}
+
+This section describes relevant experiments, including how to set up the software and data, and result summaries.
+
+\subsection{Experimentation with Deep Reinforcement Learning Hands On Second Edition}
+
+This book [cite] and associated software is a great starting point for experimentation with DRL.
+
+\subsubsection{Installation}
+
+The code is available on Github.  See:
+
+\noindent \url{https://github.com/PacktPublishing/Deep-Reinforcement-Learning-Hands-On-Second-Edition}
+
+Just clone into a directory using ssh, as usual.
+
+Additional requirements are
+
+PyTorch
+CUDA (if available)
+Gymnasium
+note, using Gymnasium, not Gym (Gymnasium is the supported descendant)
+
+To install Gymnasium, do
+
+python3 -m pip install gymnasium
+
+See github
+
+https://github.com/Farama-Foundation/Gymnasium
+
+
+
+
+
+See requirements.txt for a full list
+
+
+To run the Python programs in the chapters, do
+
+python <program name>.py
+
+Depending on the Python installation, may have to do python3 instead of python
+
+
+\paragraph{Experiments from Chapter 2} The programs in this chapter are basic examples of agents operating in environments.
+
+\underline{01\_agent\_anatomy.py}
+
+This runs without any modifications needed.
+
+\underline{02\_cartpole\_random.py}
+
+This required some minor modifications, including ones due to the API change in env.step().
+
+See
+
+\noindent \url{https://stackoverflow.com/questions/73195438/openai-gyms-env-step-what-are-the-values}
+
+\noindent \url{https://www.anyscale.com/blog/an-introduction-to-reinforcement-learning-with-openai-gym-rllib-and-google}
+
+\noindent \url{https://aleksandarhaber.com/cart-pole-control-environment-in-openai-gym-gymnasium-introduction-to-openai-gym/}
+
+
+
+
+
+
 \subsection{Template Styles}
 
 
