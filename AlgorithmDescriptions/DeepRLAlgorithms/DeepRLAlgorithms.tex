@@ -66,7 +66,13 @@
 %
 % The abstract is a short summary of the work to be presented in the article.
 \begin{abstract}
-This provides a summary and references for current standard deep reinforcement learning algorithms, including .
+  This provides a summary and references for current standard \textit{Deep Reinforcement Learning} (DRL) algorithms.
+  The emphasis is on DRL for control of plants (agents) with continuous control actions, particularly, robots.
+  As this field becomes more mature, it is important to be aware of open source tools that simplify implementation and use of
+  the algorithms
+  Therefore, in addition to the algorithm descriptions, this document includes summaries of important tools,
+  including simulators, deep learning platforms like PyTorch, and a variety of wrappers for platforms like PyTorch that make
+  implementation easier.
 \end{abstract}
 
 
@@ -88,6 +94,41 @@ This provides a summary and references for current standard deep reinforcement l
 \maketitle
 
 \section{Introduction}
+
+To begin, it is useful to understand the place of DRL within the general field of Deep Learning.
+The field of Deep Learning can be divided into three categories: supervised learning, unsupervised learning, and
+reinforcement learning.
+
+Supervised learning requires first generating a possibly large \textit{training set} of example inputs with corresponding outputs.
+The outputs are sometimes called ``labels''.
+For example, in an image classification problem, the inputs are images, and the outputs are associated labels that
+descibe the images.
+The generation of such training sets is typically the most time consuming aspect of supervised learning.
+
+Unsupervised learning avoids the need for ``supervision'' by not requiring labels.
+It uses input (a set of images, for example), and tries to find hidden structure and relations.
+A typical task is to cluster inputs into sets based on some aspect of similarity.
+
+Reinforcement learning can be considered to be ``between'' supervised and unsupervised learning in terms of the human supervision
+that it requires.
+Although reinforcement learning does not require direct supervision in the form of labels, it does require an environment for the
+\textit{agent} to explore, and a reward function based on the agent's behavior.
+The environment is often simulated.
+Fidelity and speed of the simulation are key determinants of success.
+
+
+
+
+
+Intro sub sections
+
+Overview of other sections
+
+Use book as guide for how to organize, but bias towards continuous action spaces.
+
+
+
+
 
 \subsection{Algorithm Categorization}
 
@@ -200,6 +241,12 @@ Focus on continuous action models like mountain car.
 
 Think about whether it makes sense to have hybrid discrete/continuous actions, maybe
 from two separate heads of the DNN.
+
+
+
+\section{Background}
+
+Problem statement, take from below.
 
 
 
