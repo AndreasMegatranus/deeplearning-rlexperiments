@@ -42,6 +42,11 @@
 
 \DeclareMathOperator*{\argmax}{argmax}
 
+\graphicspath{{Figures/}} % Set the default folder for images
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
 %
 % end of the preamble, start of the body of the document source.
 \begin{document}
@@ -401,6 +406,286 @@ The target network is used to compute $q_\pi (s^\prime, a^\prime)$ for the right
 Using a separate target network in this way improves training stability.
 
 
+\section{Policy-Based Methods}
+
+This is based on the excellent tutorial in Hugging Face:
+\url{https://huggingface.co/learn/deep-rl-course/unit4/introduction}
+
+See also DRL Hands On, and Open AI ref that Kamil sent, and, of course, the original papers.
+
+\subsection{Value-Based and Policy-Based Methods}
+
+In value-based methods, the policy, $\pi$, is not represented explicitly.
+Instead, the action is computed from the value function (a function that gives the value of the current state)
+or the Q function (a function that gives the value of a proposed action given the current state).
+In policy-based methods, the action is computed directly from a policy function, which is a function of the current state.
+
+In Deep RL, value or Q functions are implemented using a deep neural network.
+Similarly, policy functions are implemented using a deep NN.
+Actor-critic methods use a combination of value and policy based NN models.
+
+The policy function is typically written as $\pi_\theta$ where $\theta$ represents the NN weights (parameters).
+The policy function typically represents a \textbf{stochastic} policy;  the policy function outputs a
+probability distribution over actions, rather than a deterministic value.
+
+\begin{equation}
+  \pi_\theta (s) = \Pr \left[ A \mid s; \theta \right]
+\label{eq:stochasticpolicy1}
+\end{equation}
+
+
+A typical architecture for a stochastic policy model is shown in Figure \ref{fig:StochasticPolicyArchitecture11}.
+Compared with neural net architectures used for image recognition, which have large numbers of layers including convolutional layers for filtering,
+the architectures used in deep reinforcement learning are relatively simple.
+The example shown here is typical;  there is an input layer, a single hidden fully connected layer, and an output layer, which is a softmax layer
+(see \url{https://en.wikipedia.org/wiki/Softmax_function}).
+The current state is input to the input layer.
+The output is a set of probabilities for (in this case) discrete actions.
+
+
+\begin{figure}[tb]
+\centering 
+\includegraphics[width=0.7\columnwidth]{stochasticpolicyarchitecture} 
+\caption[Stochastic policy architecture]{Neural net architecture for parameterized stochastic policy} % The text in the square bracket is the caption for the list of figures while the text in the curly brackets is the figure caption
+\label{fig:StochasticPolicyArchitecture11} 
+\end{figure}
+
+
+\subsection{Training a policy model}
+
+Models are trained by adjusting the model parameters, $\theta$, so that an appropriate objective function, $J(\theta)$, is maximized.
+In this case, the objective function is the expected reward;  we want to maximize the expected reward in an RL system.
+Specifically, the policy is to be tuned so that actions that maximize the return (given the current state) have higher probability.
+The algorithm for this is as follows:
+
+\begin{algorithm}
+\caption{Policy model training algorithm}\label{alg:policytraining}
+\begin{algorithmic}[1]
+  \State Collect an episode with the current policy
+  \State Calculate the reward for the episode
+  \State Update the model parameters:
+  \If{reward is positive}
+    \State increase the probability of state-action pairs taken during the episode
+  \ElsIf{reward is negative}
+    \State decrease the probability of state-action pairs taken during the episode
+  \EndIf
+\end{algorithmic}
+\end{algorithm}
+
+The objective function can be expressed as
+
+\begin{equation}
+  J(\theta) = \mathbb{E}_{\tau \sim \pi} \left[ R(\tau) \right]
+\label{eq:stochasticpolicy1}
+\end{equation}
+
+\noindent where $\tau$ is a trajectory (sequence of states and actions) that is sampled from $\pi$ as the state evolves, and
+$R$ is the cumulative reward (return).  The cumulative reward is defined as
+
+\begin{equation}
+  R(\tau) = r_{t + 1} + \gamma r_{t+2} + \gamma^2 r_{t + 3} + ...
+\label{eq:cumulativereward}
+\end{equation}
+
+\noindent where $r_t$ is the reward at time $t$, and $\gamma$ is a discount factor.  Thus, future reward is counted less than
+immediate reward.
+
+
+The expected return for a specific trajectory, $\tau$, is given by
+
+\begin{equation}
+  \mathbb{E} \left[ R(\tau) \right] = \Pr (\tau; \theta) R(\tau)
+\label{eq:expectedreturn1}
+\end{equation}
+
+The objective function can then be expressed as
+
+\begin{equation}
+  J(\theta) = \sum_{\tau} \Pr (\tau; \theta) R(\tau)
+\label{eq:stochasticpolicy2}
+\end{equation}
+
+\noindent Note that this is a sum over all possible trajectories, $\tau$, which is usually impractical.
+Instead, for practical purposes, a set of $N$ trajectories is sampled by running $N$ episodes.
+
+The probability of a trajectory is a function of the policy and the environment dynamics:
+
+\begin{equation}
+  \Pr (\tau; \theta) = \prod_{t=0} \Pr(s_{t+1} \mid s_t, a_t) \pi_\theta (a_t \mid s_t)
+\label{eq:trajectoryprobability}
+\end{equation}
+
+\noindent If the environment is deterministic, then
+
+\begin{equation}
+  \Pr(s_{t+1} \mid s_t, a_t) = 1
+\label{eq:deterministicenvironment}
+\end{equation}
+
+\subsubsection{Gradient ascent and the Policy Gradient Theorem}
+
+As discussed previously, the policy model is learned by adjusting $\theta$ so that the objective function, $J(\theta)$ is maximized.
+The algorithm for adjusting $\theta$ is called gradient ascent.
+The algorithm proceeds as a sequence of steps, where each step performs the following update:
+
+\begin{equation}
+  \theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)
+\label{eq:gradientascentupdatestep}
+\end{equation}
+
+\noindent where $\alpha$ is a learning rate constant.
+
+There is a problem with computing the gradient of $J(theta)$, even if we use the approximation based on a set of sampled trajectories.
+For non-deterministic environments, the environment dynamics state distribution, $\Pr(s_{t+1} \mid s_t, a_t)$, may not be known, analytically.
+Fortunately, this can be resolved by using the Policy Gradient Theorem, which states that:
+
+\begin{equation}
+  \nabla_\theta J (\theta) = \mathbb{E}_{\pi_\theta} \left[ \nabla_\theta \log \pi_\theta (a_t \mid s_t) R(\tau)  \right]
+\label{eq:policygradienttheorem1}
+\end{equation}
+
+The derivation for this theorem will be presented shortly.
+First, its use in a simple policy-gradient method called REINFORCE will be explained.
+At each step of the REINFORCE training algorithm, the current policy, $\pi_\theta$ is used to collect a trajectory, $\tau$, for a single episode.
+This is then used to estimate the gradient, $\hat{g} \approx \nabla_\theta J (\theta)$.
+
+\begin{equation}
+  \nabla_\theta J (\theta) \approx \hat{g} = \sum_{t=0} \nabla_\theta \log \pi_\theta (a_t \mid s_t) R(\tau)
+\label{eq:policygradienttheorem1}
+\end{equation}
+
+\noindent The gradient estimate is then used to update $\theta$ using \ref{eq:gradientascentupdatestep};  $\theta \leftarrow \theta + \alpha \hat{g}$.
+
+The gradient, $\nabla_\theta \log \pi_\theta (a_t \mid s_t)$, is the direction of the steepest increase of the (log) probability of selection action $a_t$ given state $s_t$.
+The return, $R(\tau)$, provides a scaling factor indicating how far to go in the direction.
+If $R(\tau)$ is positive, $\theta$ will be adjusted to increase the probabilities of the (state, action) combinations.
+If $R(\tau)$ is negative, $\theta$ will be adjusted to decrease the probabilities of the (state, action) combinations.
+
+It is also possible to collect multiple episodes, rather than just one, during a training step.
+The gradient estimate is then just the average over all the episode trajectory gradient estimates.
+
+\subsubsection{Derivation of the Policy Gradient Theorem}
+
+From \ref{eq:stochasticpolicy2}, we have
+
+\begin{equation}
+  \nabla_\theta J(\theta) = \nabla_\theta \sum_{\tau} \Pr (\tau; \theta) R(\tau)
+\label{eq:policygradienttheoryderivation1}
+\end{equation}
+
+\noindent The gradient of the sum on the right side can be rewritten as the sum of the gradient
+
+\begin{equation}
+  \nabla_\theta \sum_{\tau} \Pr (\tau; \theta) R(\tau) = \sum_{\tau} \nabla_\theta \left( \Pr (\tau; \theta) R(\tau) \right) = \sum_{\tau} \nabla_\theta \Pr (\tau; \theta) R(\tau)
+\label{eq:policygradienttheoryderivation2}
+\end{equation}
+
+\noindent ($R(\tau)$ is not dependent on $\theta$).
+The next step is to multiply the term in the sum by
+
+\begin{equation}
+  \frac{\Pr (\tau; \theta)}{\Pr (\tau; \theta)} = 1
+\label{eq:policygradienttheoryderivation3}
+\end{equation}
+
+\noindent resulting in
+
+\begin{equation}
+  \sum_{\tau} \nabla_\theta \Pr (\tau; \theta) R(\tau) = \sum_{\tau} \frac{\Pr (\tau; \theta)}{\Pr (\tau; \theta)} \nabla_\theta \Pr (\tau; \theta) R(\tau) = \sum_{\tau} \Pr (\tau; \theta) \frac{\nabla_\theta \Pr (\tau; \theta)}{\Pr (\tau; \theta)} R(\tau)
+\label{eq:policygradienttheoryderivation4}
+\end{equation}
+
+\noindent Now, from calculus,
+
+\begin{equation}
+  \nabla_x \log f(x) = \frac{\nabla_x f(x)}{f(x)}
+\label{eq:policygradienttheoryderivation5}
+\end{equation}
+
+\noindent Therefore, \ref{eq:policygradienttheoryderivation4} can be rewritten as
+
+\begin{equation}
+  \sum_{\tau} \Pr (\tau; \theta) \frac{\nabla_\theta \Pr (\tau; \theta)}{\Pr (\tau; \theta)} R(\tau) = \sum_{\tau} \Pr (\tau; \theta) \nabla_\theta \log \Pr (\tau; \theta) R(\tau) = \nabla_\theta J(\theta)
+\label{eq:policygradienttheoryderivation6}
+\end{equation}
+
+
+
+
+
+
+
+
+It is possible to simplify the term $\nabla_\theta \log \Pr (\tau; \theta)$.
+From \ref{eq:trajectoryprobability},
+
+\begin{equation}
+  \nabla_\theta \log \Pr (\tau; \theta) = \nabla_\theta \log \left[ \mu(s_0) \prod_{t=0}^H  \Pr(s_{t+1} \mid s_t, a_t) \pi_\theta (a_t \mid s_t)   \right]    
+\label{eq:policygradienttheoryderivation7}
+\end{equation}
+
+\noindent where $\mu(s_0)$ is the initial state probability, and $H$ is the trajectory horizon.
+
+Now, the log of a product is equal to the sum of the logs.  Therefore, \ref{eq:policygradienttheoryderivation7} can be rewritten as
+
+\begin{equation}
+  \nabla_\theta \log \Pr (\tau; \theta) = \nabla_\theta \left[ \log \mu(s_0) + \sum_{t=0}^H \log \Pr(s_{t+1} \mid s_t, a_t) + \sum_{t=0}^H \log \pi_\theta (a_t \mid s_t)  \right]
+\label{eq:policygradienttheoryderivation8}
+\end{equation}
+
+\noindent Also, the gradient of a sum of terms is equal to the sum of the gradients of the terms, so this can be rewritten as
+
+\begin{equation}
+  \nabla_\theta \log \Pr (\tau; \theta) = \nabla_\theta \log \mu(s_0) + \nabla_\theta \sum_{t=0}^H \log \Pr(s_{t+1} \mid s_t, a_t) + \nabla_\theta \sum_{t=0}^H \log \pi_\theta (a_t \mid s_t)
+\label{eq:policygradienttheoryderivation9}
+\end{equation}
+
+\noindent Now, the initial state probability, and the environment MDP state transition dynamics are not dependent on $\theta$, so the derivative of these terms is 0.
+Therefore,
+
+\begin{equation}
+  \nabla_\theta \log \Pr (\tau; \theta) =  \nabla_\theta \sum_{t=0}^H \log \pi_\theta (a_t \mid s_t)
+\label{eq:policygradienttheoryderivation10}
+\end{equation}
+
+\noindent The gradient of the sum is equal to the sum of the gradients, so this can be rewritten as
+
+\begin{equation}
+  \nabla_\theta \log \Pr (\tau; \theta) =  \sum_{t=0}^H \nabla_\theta \log \pi_\theta (a_t \mid s_t)
+\label{eq:policygradienttheoryderivation10}
+\end{equation}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{DRL Hands On Chapter Notes}
+
+[Mention which chapters are relevant]
+
+\subsection{Chapter 17 Notes}
+
+
+\subsection{Chapter 19 Notes}
+
+For equations, utilize very simple examples to understand
+
+
+Note:  hugging face has good tutorials
+
+Hugging face tutorial is great!
+
+
+
+
 
 \section{Experimentation}
 
@@ -424,6 +709,8 @@ PyTorch
 CUDA (if available)
 Gymnasium
 note, using Gymnasium, not Gym (Gymnasium is the supported descendant)
+tensorboardX
+tensorflow
 
 To install Gymnasium, do
 
@@ -433,8 +720,21 @@ See github
 
 https://github.com/Farama-Foundation/Gymnasium
 
+This installs the basic environments.  For atari games, do
+
+python3 -m pip install gymnasium[atari]
+python3 -m pip install gymnasium[accept-rom-license]
 
 
+
+To install tensorboardX, tensorflow, do
+
+python3 -m pip install tensorboardX
+python3 -m pip install tensorflow
+
+To install ignite, do
+
+python3 -m pip install pytorch-ignite
 
 
 See requirements.txt for a full list
@@ -466,6 +766,13 @@ See
 \noindent \url{https://aleksandarhaber.com/cart-pole-control-environment-in-openai-gym-gymnasium-introduction-to-openai-gym/}
 
 
+\paragraph{Experiments from Chapter 4} The programs in this chapter are basic examples using the cross-entropy learning method.
+
+To run tensorboard, do (from the chapter level directory)
+
+tensorboard --logdir runs
+
+Then open a browser and use the url http://localhost:6006
 
 
 
