@@ -609,14 +609,23 @@ The next step is to multiply the term in the sum by
 \label{eq:policygradienttheoryderivation6}
 \end{equation}
 
+As mentioned previously, it is not practical to compute $\nabla_\theta J(\theta)$ exactly as this would require enumerating all possible trajectories $\tau$.
+However, $\nabla_\theta J(\theta)$ can be approximated by sampling:
+
+\begin{equation}
+  \nabla_\theta J(\theta) \approx \hat{g} = \frac{1}{m} \sum_{i=1}^m \nabla_\theta \log \Pr (\tau; \theta) R(\tau)
+\label{eq:policygradienttheoryderivation6a}
+\end{equation}
+
+\noindent Note that if only one episode is run, $m = 1$, and
+
+\begin{equation}
+  \nabla_\theta J(\theta) \approx \hat{g} = \nabla_\theta \log \Pr (\tau; \theta) R(\tau)
+\label{eq:policygradienttheoryderivation6b}
+\end{equation}
 
 
-
-
-
-
-
-It is possible to simplify the term $\nabla_\theta \log \Pr (\tau; \theta)$.
+The term $\nabla_\theta \log \Pr (\tau; \theta)$ must now be expanded so that the probability can be evaluated.
 From \ref{eq:trajectoryprobability},
 
 \begin{equation}
